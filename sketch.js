@@ -22,7 +22,7 @@ function preload() {
 }
 
 function setup() {
-  createCanvas(windowWidth, 3700);
+  createCanvas(windowWidth, 4000);
   textSize(16);
   textAlign(LEFT, TOP);
   categorizeImages();
@@ -138,6 +138,21 @@ function draw() {
         text("Description:", w + 40, 40);
         textSize(14);
         text(selected.description || "No description available.", w + 40, 70, width - w - 80); // Wrap text
+
+        // Display tags below the description
+        textSize(16);
+        text("Tags:", w + 40, h + 70);  // Label for the tags
+        textSize(14);
+        let tagY = h + 90; // Start displaying tags below description
+        if (selected.tags && selected.tags.length > 0) {
+          selected.tags.forEach(tag => {
+            text("- " + tag, w + 40, tagY);
+            tagY += 20;  // Space between each tag
+          });
+        } else {
+          text("No tags available.", w + 40, tagY);
+        }
+        
       }
     }
   };
