@@ -1,131 +1,324 @@
-
 [
-
     {
         "src": "imgs/Img1.jpg",
         "date": "2023-08-19",
         "description": "Two slightly blurry photographs show two young children, possibly siblings, in different settings, one outdoors near a railing and the other indoors in a kitchen or playroom.",
-        "tags": []
+        "tags": [
+            "photographs",
+            "children",
+            "siblings",
+            "settings",
+            "railing",
+            "kitchen",
+            "playroom"
+        ]
     },
     {
         "src": "imgs/Img2.jpg",
         "date": "2023-08-19",
         "description": "A newborn baby, wrapped in a white hospital blanket, lies asleep in a bassinet.",
-        "tags": []
+        "tags": [
+            "baby",
+            "hospital",
+            "blanket",
+            "bassinet"
+        ]
     },
     {
         "src": "imgs/Img3.jpg",
         "date": "2023-08-19",
         "description": "A family of four, including a man, a woman, and two young children, poses for a picture on a couch.",
-        "tags": []
+        "tags": [
+            "family",
+            "man",
+            "woman",
+            "children",
+            "picture",
+            "couch"
+        ]
     },
     {
         "src": "imgs/Img4.jpg",
         "date": "2023-12-01",
         "description": "Two women, one standing and one sitting, pose for a slightly out-of-focus photo on a stone wall overlooking a body of water.",
-        "tags": []
+        "tags": [
+            "women",
+            "photo",
+            "stone",
+            "wall",
+            "body",
+            "water"
+        ]
     },
     {
         "src": "imgs/Img5.jpg",
         "date": "2023-04-08",
         "description": "A mille-feuille birthday cake decorated with fresh strawberries, blackberries, blueberries, and a chocolate plaque saying 'Happy Birthday Mom' is being taken out of its box.",
-        "tags": []
+        "tags": [
+            "birthday",
+            "cake",
+            "strawberries",
+            "blackberries",
+            "blueberries",
+            "chocolate",
+            "plaque",
+            "Happy",
+            "Birthday",
+            "Mom",
+            "box"
+        ]
     },
     {
         "src": "imgs/Img6.jpg",
         "date": "2023-04-08",
         "description": "An older woman wearing a brightly colored floral shirt sits at a table with a delicious-looking layered cake topped with berries in front of her.",
-        "tags": []
+        "tags": [
+            "woman",
+            "shirt",
+            "table",
+            "cake",
+            "berries",
+            "front"
+        ]
     },
     {
         "src": "imgs/Img7.jpg",
         "date": "2023-04-08",
         "description": "An older woman in a floral shirt sits at a table with a mille-feuille cake decorated with strawberries, blackberries, and blueberries in front of her.",
-        "tags": []
+        "tags": [
+            "woman",
+            "shirt",
+            "table",
+            "cake",
+            "strawberries",
+            "blackberries",
+            "blueberries",
+            "front"
+        ]
     },
     {
         "src": "imgs/Img8.jpg",
         "date": "2023-04-08",
         "description": "Four women, presumably family members, gather around a mille-feuille cake, likely in celebration of a birthday.",
-        "tags": []
+        "tags": [
+            "women",
+            "family",
+            "members",
+            "mille-feuille",
+            "cake",
+            "celebration",
+            "birthday"
+        ]
     },
     {
         "src": "imgs/Img9.jpg",
         "date": "2023-04-08",
         "description": "A family gathers around a table with a birthday cake for 'Mom', smiling for a photo.",
-        "tags": []
+        "tags": [
+            "family",
+            "table",
+            "birthday",
+            "cake",
+            "Mom",
+            "photo"
+        ]
     },
     {
         "src": "imgs/Img10.jpg",
         "date": "2023-09-21",
         "description": "Three bottles of liquor—Bombay Sapphire gin, Grande Absente, and Hayman's—and a jigger sit on a gray blanket.",
-        "tags": []
+        "tags": [
+            "bottles",
+            "liquor",
+            "Bombay",
+            "Sapphire",
+            "gin",
+            "Grande",
+            "Absente",
+            "Hayman",
+            "—",
+            "jigger",
+            "blanket"
+        ]
     },
     {
         "src": "imgs/Img11.jpg",
         "date": "2023-09-27",
         "description": "A still-life painting on a wooden easel depicts three bottles—a clear one with a green liquid and gold cap, a dark one with a white label, and a bright blue plastic bottle lying horizontally—against a textured gray backdrop.",
-        "tags": []
+        "tags": [
+            "painting",
+            "easel",
+            "bottles",
+            "one",
+            "liquid",
+            "gold",
+            "cap",
+            "one",
+            "label",
+            "bottle",
+            "backdrop"
+        ]
     },
     {
         "src": "imgs/Img12.jpg",
         "date": "2023-10-13",
         "description": "A painting on an easel depicts Wisława Szymborska's face, with handwritten text overlaid and a black and white photo of Szymborska placed in the bottom left corner.",
-        "tags": []
+        "tags": [
+            "painting",
+            "easel",
+            "Wisława",
+            "Szymborska",
+            "face",
+            "text",
+            "photo",
+            "Szymborska",
+            "bottom",
+            "corner"
+        ]
     },
     {
         "src": "imgs/Img13.jpg",
         "date": "2023-10-20",
         "description": "An unfinished portrait of Wisława Szymborska, a Polish poet and essayist, is shown next to a black and white photo of her.",
-        "tags": []
+        "tags": [
+            "portrait",
+            "Wisława",
+            "Szymborska",
+            "poet",
+            "essayist",
+            "photo"
+        ]
     },
     {
         "src": "imgs/Img14.jpg",
         "date": "2023-12-01",
         "description": "A hand holds a faded snapshot of three women near a stone wall overlooking a body of water, with paint tubes blurred in the foreground.",
-        "tags": []
+        "tags": [
+            "hand",
+            "snapshot",
+            "women",
+            "stone",
+            "wall",
+            "body",
+            "water",
+            "paint",
+            "tubes",
+            "foreground"
+        ]
     },
     {
         "src": "imgs/Img15.jpg",
         "date": "2023-12-12",
         "description": " A painting on an easel depicts two faceless figures, one standing in white/gray and one sitting in light blue, against a gray and white background suggestive of fog or mist.",
-        "tags": []
+        "tags": [
+            "painting",
+            "easel",
+            "figures",
+            "background",
+            "fog",
+            "mist"
+        ]
     },
     {
         "src": "imgs/Img16.jpg",
         "date": "2023-12-13",
         "description": "A painting depicts two figures with blank faces, one standing and wearing light-colored clothes, the other sitting and wearing blue and white, on a stone ledge overlooking a gray body of water.",
-        "tags": []
+        "tags": [
+            "painting",
+            "figures",
+            "faces",
+            "clothes",
+            "stone",
+            "ledge",
+            "body",
+            "water"
+        ]
     },
     {
         "src": "imgs/Img17.jpg",
         "date": "2023-12-14",
         "description": "A painting depicts two figures, one standing and one sitting, with featureless faces, against a muted gray-blue backdrop, possibly by the sea, with the sitting figure perched on a low stone wall.",
-        "tags": []
+        "tags": [
+            "painting",
+            "figures",
+            "faces",
+            "backdrop",
+            "sea",
+            "figure",
+            "stone",
+            "wall"
+        ]
     },
     {
         "src": "imgs/Img18.jpg",
         "date": "2023-07-05",
         "description": "A seating chart for the Twice 5th World Tour 'Ready to Be' at MetLife Stadium shows the stage, seating sections, and available filters and legend.",
-        "tags": []
+        "tags": [
+            "seating",
+            "chart",
+            "Twice",
+            "World",
+            "Tour",
+            "Ready",
+            "MetLife",
+            "Stadium",
+            "stage",
+            "seating",
+            "sections",
+            "filters",
+            "legend"
+        ]
     },
     {
         "src": "imgs/Img19.jpg",
         "date": "2023-07-06",
         "description": "A screenshot of a Ticketmaster mobile ticket displays details for the Twice 5th World Tour 'Ready To Be' concert at MetLife Stadium on July 6, 2023, at 7:30 PM, with section 236, row 4, seat 5, and entry through the Verizon Gate, along with a promotional image of the group.",
-        "tags": []
+        "tags": [
+            "screenshot",
+            "Ticketmaster",
+            "ticket",
+            "details",
+            "Twice",
+            "World",
+            "Tour",
+            "Ready",
+            "concert",
+            "MetLife",
+            "Stadium",
+            "July",
+            "PM",
+            "section",
+            "row",
+            "seat",
+            "entry",
+            "Verizon",
+            "Gate",
+            "image",
+            "group"
+        ]
     },
     {
         "src": "imgs/Img20.jpg",
         "date": "2023-10-13",
         "description": "A sepia-toned portrait features a woman with her eyes closed, a slight smile, a cigarette held between the fingers of her left hand, and a teacup in front of her, all while seated before a backdrop of bookshelves.",
-        "tags": []
+        "tags": [
+            "portrait",
+            "woman",
+            "eyes",
+            "smile",
+            "cigarette",
+            "fingers",
+            "hand",
+            "teacup",
+            "front",
+            "backdrop",
+            "bookshelves"
+        ]
     },
     {
-        "src": "imgs/ImgTest2.jpg",
+        "src": "imgs/ImgTest1.jpg",
         "date": "2025-04-09",
         "description": "",
         "tags": []
     }
-
-  ]
+]
