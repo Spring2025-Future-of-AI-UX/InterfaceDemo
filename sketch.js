@@ -3,12 +3,19 @@
 let imageData;
 let groups = {};
 let loadedImages = {};
+
 let thumbnailSize = 250;
 let thumbnails = [];
+
 let selectedImage = null;
 let showGallery = true;
+
 let backButton;
 const maxImageSize = 512;
+
+let searchInput;
+let searchTerm = "";
+
 
 function preload() {
   imageData = loadJSON("metadata.json", (data) => {
@@ -22,7 +29,7 @@ function preload() {
 }
 
 function setup() {
-  createCanvas(windowWidth, 4000);
+  createCanvas(windowWidth, 4200);
   textSize(16);
   textAlign(LEFT, TOP);
   categorizeImages();
@@ -34,6 +41,19 @@ function setup() {
   backButton.position(37, 20);
   backButton.mousePressed(goBackToGallery);
   backButton.hide();
+
+
+  searchInput = createInput();
+  searchInput.position(20, 80); // Adjust position if needed
+  searchInput.size(300);
+  searchInput.position((windowWidth - 300) / 2, 40); // Horizontally center it
+  searchInput.attribute("placeholder", "Search by tag or description...");
+  searchInput.input(() => {
+    searchTerm = searchInput.value().toLowerCase();
+    displayThumbnails(); // Re-render on every input change
+  });
+
+
 }
 
 function categorizeImages() {
@@ -49,31 +69,42 @@ function categorizeImages() {
 }
 
 function displayThumbnails() {
-  let x = 20, y = 20;
+  clear();
+  let x = 20, y = 120; // Push content down to avoid overlapping with search bar
   thumbnails = [];
 
   for (let date in groups) {
-    fill(0);
-    text(date, x, y);
-    y += 25;
-    for (let img of groups[date]) {
-      let p5img = loadedImages[img.src];
-      let squareSize = thumbnailSize;
+    let filteredImages = groups[date].filter(img => {
+      const descMatch = img.description?.toLowerCase().includes(searchTerm);
+      const tagMatch = img.tags?.some(tag => tag.toLowerCase().includes(searchTerm));
+      return descMatch || tagMatch;
+    });
 
-      let sx = 0, sy = 0, sw = p5img.width, sh = p5img.height;
-      if (sw > sh) { sx = (sw - sh) / 2; sw = sh; }
-      else if (sh > sw) { sy = (sh - sw) / 2; sh = sw; }
+    if (filteredImages.length > 0) {
+      fill(0);
+      text(date, x, y);
+      y += 25;
 
-      image(p5img, x, y, squareSize, squareSize, sx, sy, sw, sh);
-      thumbnails.push({ x, y, size: squareSize, img: p5img, src: img.src });
+      for (let img of filteredImages) {
+        let p5img = loadedImages[img.src];
+        let squareSize = thumbnailSize;
 
-      x += squareSize + 10;
-      if (x > width - 120) { x = 20; y += squareSize + 10; }
+        let sx = 0, sy = 0, sw = p5img.width, sh = p5img.height;
+        if (sw > sh) { sx = (sw - sh) / 2; sw = sh; }
+        else if (sh > sw) { sy = (sh - sw) / 2; sh = sw; }
+
+        image(p5img, x, y, squareSize, squareSize, sx, sy, sw, sh);
+        thumbnails.push({ x, y, size: squareSize, img: p5img, src: img.src });
+
+        x += squareSize + 10;
+        if (x > width - 120) { x = 20; y += squareSize + 10; }
+      }
+      x = 20;
+      y += thumbnailSize + 30;
     }
-    x = 20;
-    y += thumbnailSize + 30;
   }
 }
+
 
 function mousePressed() {
   if (showGallery) {
