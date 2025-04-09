@@ -1,4 +1,4 @@
-
+//-------------------Interface---------------------------------------//
 
 //Image data storing info of source, date (when it was taken), AI generated descriptions, and tags
 let imageData = [
@@ -42,14 +42,17 @@ function preload() {
     tempImg.resize(maxImageSize, 0); // Resizes the longest side to maxImageSize, maintaining aspect ratio
     loadedImages[img.src] = tempImg; // Store the resized image
   }
+
 }
 
 function setup() {
-  createCanvas(windowWidth, 2000);
+  createCanvas(windowWidth, 3700);
   textSize(16);
   textAlign(LEFT, TOP);
   categorizeImages();
   displayThumbnails();
+
+  generateAllDescriptions();
 
   // Create a "Back to Gallery" button
   backButton = createButton('Back to Gallery');
@@ -57,6 +60,13 @@ function setup() {
   backButton.mousePressed(goBackToGallery);
   backButton.hide(); // Hide initially until an image is selected
 }
+
+function encodeImg(img) {
+  img.loadPixels();
+  let imgURL = img.canvas.toDataURL("image/jpeg");
+  return imgURL.replace("data:image/jpeg;base64,", "");
+}
+
 
 function categorizeImages() {
   // Sort imageData by date (most recent first)
@@ -169,5 +179,8 @@ function draw() {
     fill(255);
     rect(10, 30, w + 20, h + 20); // lightbox frame
     image(selectedImage, 20, 40, w, h);
+    fill(0);
+    text("Description:", maxImageSize + 40, 40);
+    text(selectedImage.description || "Loading...", maxImageSize + 40, 60);
   }
 }
