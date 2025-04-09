@@ -18,15 +18,19 @@ async function generateAllDescriptions() {
         let description = await generateVisionContent(base64, prompt);
   
         img.description = description;
-        //img.tags = extractTagsFromDescription(description); // Still use this if you have the tag function
+
+        //let tags = extractNouns(description);
+        //img.tags = tags;
   
         console.log("Description:", description);
+        //console.log("Tags:", tags);
       }
     }
   }
 
 
-// AI version of simple noun extractors
+// // AI version of simple noun extractors
+// // Interesting approach but inaccurate
   
 //   function extractNouns(description) {
 //     // Simple noun extraction (placeholder for NLP library)
