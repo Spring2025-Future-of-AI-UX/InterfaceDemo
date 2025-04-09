@@ -1,69 +1,43 @@
-//-----------------query Gemini----------------------//
+//----------query Gemini----------//
+//----AI generated mixed version for gemini.js and sketch.js from prev ex ----//
 
- let API_URL = "https://generativelanguage.googleapis.com/v1beta/models";
+let API_URL = "https://generativelanguage.googleapis.com/v1beta/models";
 
-// async function generateContent(prompt, model = "gemini-1.5-pro") {
-//   let REQUEST_URL = `${API_URL}/${model}:generateContent?key=${GOOGLE_API_KEY}`;
-
-//   let res = await fetch(REQUEST_URL, {
-//     method: "POST",
-//     body: JSON.stringify({
-//       contents: [ prompt ],
-//     }),
-//     headers: {
-//       "Content-type": "application/json; charset=UTF-8",
-//     },
-//   });
-//   let json = await res.json();
-
-//   // AI generated
-//   // Safeguard: Check if candidates exist and are not empty (used for detact ffree uses)
-//   if (json && json.candidates && json.candidates.length > 0) {
-//     return json.candidates[0].content.parts[0].text;
-//   } else {
-//     console.error("Invalid API response:", json);
-//     return "Error: Unable to generate content.";  // Provide a fallback response
-//   } 
-// }
-
-
-let VISION_MODEL = "gemini-1.5-pro";
-
-async function generateVisionContent(base64Img, promptText = "Describe this image.") {
-  const visionRequestURL = `${API_URL}/${VISION_MODEL}:generateContent?key=${GOOGLE_API_KEY}`;
-
-  const body = {
-    contents: [
-      {
-        parts: [
-          {
-            inlineData: {
-              mimeType: "image/jpeg",
-              data: base64Img
-            }
-          },
-          {
-            text: promptText
-          }
-        ]
-      }
-    ]
-  };
-
-  let res = await fetch(visionRequestURL, {
-    method: "POST",
-    body: JSON.stringify(body),
-    headers: {
-      "Content-type": "application/json; charset=UTF-8",
-    },
-  });
-
-  let json = await res.json();
-
-  if (json && json.candidates && json.candidates.length > 0) {
-    return json.candidates[0].content.parts[0].text;
-  } else {
-    console.error("Invalid API response:", json);
-    return "Error: Unable to generate content.";
-  }
-}
+ // Helper: encode p5.Image to base64 JPEG
+ //AI generated version of prev example of Gemini's sketch.js img encoder
+ function encodeImg(img) {
+   img.loadPixels();
+   return img.canvas.toDataURL("image/jpeg").replace("data:image/jpeg;base64,", "");
+ }
+ 
+ // Call Gemini model
+ async function generateVisionContent(base64Img, prompt = "Describe this image in one sentence.", model = "gemini-1.5-pro") {
+   const REQUEST_URL = `${API_URL}/${model}:generateContent?key=${GOOGLE_API_KEY}`;
+ 
+   const res = await fetch(REQUEST_URL, {
+     method: "POST",
+     headers: {
+       "Content-Type": "application/json",
+     },
+     body: JSON.stringify({
+       contents: [
+         {
+           parts: [
+             { inlineData: { mimeType: "image/jpeg", data: base64Img } },
+             { text: prompt }
+           ]
+         }
+       ]
+     })
+   });
+ 
+   const json = await res.json();
+ 
+   if (json && json.candidates && json.candidates[0]) {
+     return json.candidates[0].content.parts[0].text;
+   } else {
+     console.error("Invalid API response:", json);
+     return "Description unavailable.";
+   }
+ }
+ 
