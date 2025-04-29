@@ -1,34 +1,58 @@
+// =================== GLOBAL VARIABLES =================== //
 let imageData;
 let groups = {};
 let loadedImages = {};
 let thumbnails = [];
+let bookPositions = [];
+
+let currentStage = 'home'; // Can be 'home', 'album', or 'imageDetail'
+
 let showHomepage = true;
 let showGallery = false;
-let backButton;
-let searchInput;
+
 let currentPeriod = null;
+let selectedImage = null;
+
+let backButtonHovered = false;
+let searchInput;
 
 const thumbnailSize = 250;
 const maxImageSize = 512;
+const shelfMargin = 20;
 
-let bookColors = {};
-let shelfMargin = 20; // Adjust shelf margin as needed
-
-let carouselOffset = 0;  // To control the horizontal scroll position
-let scrollSpeed = 5;  // Speed of the scrolling when flipping pages
-let maxScroll = 0;  // Maximum scroll limit (end of the gallery)
-let minScroll = 0;  // Minimum scroll limit (start of the gallery)
-let currentIndex = 0;
+let carouselOffset = 0;
+let maxScroll = 0;
 let currentThumbnailIndex = 0;
 
-let currentStage = 'home'; // could be 'home', 'album', 'imageDetail'
-let selectedImage = null;
-let backButtonHovered = false;
-
 let isEditing = false;
-let editedDescription = "";
+
+let descriptionGenerated = false;
+
+// === New for Edit Suggestions ===
+let editSuggestions = [];
+let suggestionsGenerated = false;
+
+let editButtonArea = null;
+let descInput = null; // For editing descriptions
+
+let isGeneratingSuggestions = false;
+let loadingDots = "";
+let lastDotUpdate = 0;
+
+let isGeneratingDescription = false;
+let descriptionDots = "";
+let descriptionDotTimer = 0;
+
+let suggestionAlpha = 0;       // For fade-in
+let suggestionFadeInStart = 0; // When fade started
+let suggestionFadeDuration = 800; // ms
+
+let winkPosTagger;
+let nTags = ["NN", "NNS", "NNP", "NNPS"];
 
 
+
+// =================== PRELOAD =================== //
 function preload() {
   imageData = loadJSON("metadata.json", (data) => {
     imageData = Object.values(data);
@@ -40,6 +64,7 @@ function preload() {
   });
 }
 
+// =================== SETUP =================== //
 function setup() {
   createCanvas(windowWidth, windowHeight);
   textSize(16);
@@ -47,19 +72,20 @@ function setup() {
 
   categorizeImages();
 
-  // Search bar
+  // Setup search bar
   searchInput = createInput();
-  searchInput.position(width / 2 - 250, 30); // Centered horizontally
-  searchInput.size(500); // Longer size
+  searchInput.position(width / 2 - 250, 30);
+  searchInput.size(500);
   searchInput.attribute("placeholder", "Search by tag or description...");
   searchInput.input(handleSearch);
 
-  // Apply rounded edges using CSS
   searchInput.style('border-radius', '16px');
   searchInput.style('padding', '10px');
 }
 
+// =================== CATEGORIZE BY YEAR =================== //
 function categorizeImages() {
+  groups = {}; // Reset
   imageData.sort((a, b) => new Date(b.date) - new Date(a.date));
   for (let img of imageData) {
     let date = new Date(img.date);
@@ -67,21 +93,32 @@ function categorizeImages() {
     if (!groups[year]) groups[year] = [];
     groups[year].push(img);
   }
-
 }
 
+// =================== SEARCH FUNCTION (AND logic) =================== //
 function handleSearch() {
-  const query = searchInput.value().toLowerCase();
-  if (query.trim() === "") {
+  const query = searchInput.value().toLowerCase().trim();
+  if (query === "") {
     categorizeImages();
     currentStage = 'home';
     return;
   }
 
+  // List of common stopwords to ignore
+  const stopwords = ["a", "an", "the", "and", "with", "of", "to", "in", "on", "for", "by", "is", "at", "from", "as"];
+  
+  // Break query into meaningful terms
+  const queryWords = query.split(/\s+/).filter(word => !stopwords.includes(word));
+
   const results = imageData.filter((img) => {
     const desc = img.description?.toLowerCase() || "";
-    const tags = (img.tags || []).map((tag) => tag.toLowerCase());
-    return desc.includes(query) || tags.some((tag) => tag.includes(query));
+    const tags = (img.tags || []).map(tag => tag.toLowerCase());
+
+    // Combine description and tags into one string for easier matching
+    const combinedText = desc + " " + tags.join(" ");
+
+    // Check if ALL important query words are in combined text
+    return queryWords.every(word => combinedText.includes(word));
   });
 
   groups = { Search: results };
@@ -90,21 +127,27 @@ function handleSearch() {
 }
 
 
+// =================== DRAW =================== //
 function draw() {
   background(20);
 
   if (showHomepage) {
     displayAlbums();
+    searchInput.show();
   } else if (showGallery) {
-    displayThumbnails(); // Gallery display logic
+    displayThumbnails();
     drawBackButton();
-  }else {
+    searchInput.show();
+  } else if (selectedImage) {
     displayImageDetail();
     drawBackButton();
-
+    searchInput.hide();
   }
+
+  
 }
 
+// =================== DRAW BACK BUTTON =================== //
 function drawBackButton() {
   let x = 20;
   let y = 20;
@@ -124,33 +167,23 @@ function drawBackButton() {
   text("← Back", x + w / 2, y + h / 2);
 }
 
+// =================== DISPLAY HOMEPAGE BOOKS =================== //
 function displayAlbums() {
-  // Clear the entire canvas to reset everything
-  clear(); 
+  clear();
+  resizeCanvas(windowWidth, windowHeight);
 
-  // Ensure that the canvas dimensions are consistent
-  resizeCanvas(windowWidth, windowHeight);  // Adjust if needed for your specific layout
-
-  // Reset positions for the books and text every time this function is called
   let bookX = 40;
   let bookY = 100;
-
-  console.log('Starting position: bookX =', bookX, ', bookY =', bookY);
-
-  // Store book positions to avoid misalignment when navigating back
   bookPositions = [];
 
-  // Iterate over the albums (groups)
   for (let i = 0; i < Object.keys(groups).length; i++) {
     let period = Object.keys(groups)[i];
     let albumImages = groups[period];
     let numImages = albumImages.length;
 
-    // Calculate the book width and height
     let bookWidth = 60 + numImages * 2;
     let bookHeight = 240;
 
-    // Determine the fade effect based on the album's year
     let year = parseInt(period);
     let ageFactor = (new Date().getFullYear() - year) / 50;
     let baseColor = color(
@@ -159,87 +192,58 @@ function displayAlbums() {
       lerp(50, 80, ageFactor)
     );
 
-    let isHovered =
-      mouseX > bookX && mouseX < bookX + bookWidth &&
-      mouseY > bookY && mouseY < bookY + bookHeight;
+    let isHovered = mouseX > bookX && mouseX < bookX + bookWidth &&
+                    mouseY > bookY && mouseY < bookY + bookHeight;
 
-    let displayColor = isHovered
-      ? lerpColor(baseColor, color(255), 0.3)
-      : baseColor;
+    let displayColor = isHovered ? lerpColor(baseColor, color(255), 0.3) : baseColor;
 
-    // Draw the shadow when hovered
     if (isHovered) {
       fill(0, 50);
       noStroke();
       rect(bookX + 5, bookY + 5, bookWidth, bookHeight, 5);
     }
 
-    // Draw the book cover (rectangle)
     fill(displayColor);
     noStroke();
     rect(bookX, bookY, bookWidth, bookHeight, 5);
 
-    // Draw the book spine
     fill(100);
     rect(bookX + bookWidth - 10, bookY, 10, bookHeight, 3);
 
-    // Explicitly draw the text and ensure correct position
-    // Explicitly draw the text and ensure correct position
     fill(255);
     push();
-    // Center the text on the book, but offset it a bit higher and to the right
-    let offsetX = 10; // Right offset
-    let offsetY = -10; // Upward offset
-    translate(bookX + bookWidth / 2 + offsetX, bookY + bookHeight - 20 + offsetY);
-    rotate(-HALF_PI);  // Rotate the text to be upright
-    textAlign(CENTER, CENTER);  // Ensure the text is centered
-    text(period, 0, 0);  // Draw text
+    translate(bookX + bookWidth / 2 + 10, bookY + bookHeight - 30);
+    rotate(-HALF_PI);
+    textAlign(CENTER, CENTER);
+    text(period, 0, 0);
     pop();
 
-    // Store book position for later click detection
     bookPositions.push({ x: bookX, y: bookY, w: bookWidth, h: bookHeight, period });
 
-    // Update the position for the next book
     bookX += bookWidth + 20;
-
-    // Move to the next row if the books exceed the canvas width
     if (bookX > width - bookWidth) {
       bookX = 40;
       bookY += bookHeight + shelfMargin;
     }
   }
-
-  console.log('End position: bookX =', bookX, ', bookY =', bookY);
 }
 
-
+// =================== DISPLAY THUMBNAILS (ALBUM PAGE) =================== //
 function displayThumbnails() {
   thumbnails = [];
-  
+
   if (!groups[currentPeriod]) return;
 
-  // Starting Y position to center thumbnails vertically (you can adjust this)
   let thumbY = height / 2 - thumbnailSize / 2;
+  let spacing = thumbnailSize + 40; // consistent clean spacing
 
-  // Total width of all thumbnails including spacing
-  let totalWidth = groups[currentPeriod].length * (thumbnailSize + 10) - 10;
+  push();
+  translate(-carouselOffset, 0); // move everything based on carousel scroll
 
-  // Start X so the row is horizontally centered
-  let startX = 0;
+  let thumbX = 60; // <-- Always start a little margin on left
 
-  push(); // Save drawing state
-  translate(-carouselOffset, 0); // Apply horizontal scrolling
-
-  let thumbX = startX;  // Renamed 'x' to 'thumbX' for clarity
   for (let img of groups[currentPeriod]) {
     let p5img = loadedImages[img.src];
-    let centerX = width / 2;
-    let thumbCenterX = thumbX - carouselOffset + thumbnailSize / 2;
-    let distanceToCenter = abs(centerX - thumbCenterX);
-    let scaleFactor = map(distanceToCenter, 0, width / 2, 1.2, 0.8);
-    scaleFactor = constrain(scaleFactor, 0.8, 1.2);
-
-    let squareSize = thumbnailSize * scaleFactor;
 
     let sx = 0, sy = 0, sw = p5img.width, sh = p5img.height;
     if (sw > sh) {
@@ -250,111 +254,106 @@ function displayThumbnails() {
       sh = sw;
     }
 
-    let adjustedY = thumbY + (thumbnailSize - squareSize) / 2;
-    image(p5img, thumbX, adjustedY, squareSize, squareSize, sx, sy, sw, sh);
+    image(p5img, thumbX, thumbY, thumbnailSize, thumbnailSize, sx, sy, sw, sh);
 
     thumbnails.push({
       x: thumbX,
       y: thumbY,
-      size: squareSize,
+      size: thumbnailSize,
       img: p5img,
       src: img.src,
     });
 
-    thumbX += squareSize + 10;
+    thumbX += spacing;
   }
 
-  pop(); // Restore drawing state
+  pop();
 
-  // Calculate maxScroll
-  maxScroll = Math.max(0, totalWidth - width + 40);
-
-  // Draw carousel navigation buttons
-  drawCarouselNavButtons();
+  // Calculate scroll boundaries properly
+  let totalContentWidth = (thumbnailSize + 40) * groups[currentPeriod].length;
+  minScroll = 0;
+  maxScroll = Math.max(0, totalContentWidth + 120 - width); // 120 = margin both sides
 }
 
+// =================== DRAW CAROUSEL NAV BUTTONS =================== //
 function drawCarouselNavButtons() {
-  // Draw the "previous" button
+  // Previous button
   fill(255);
-  rect(20, height / 2 - 30, 60, 60, 10);
+  rect(20, height / 2 - 30, 40, 60, 8);
   fill(0);
   textSize(24);
   textAlign(CENTER, CENTER);
-  text("<", 50, height / 2);
+  text("<", 40, height / 2);
 
-  // Draw the "next" button
+  // Next button
   fill(255);
-  rect(width - 80, height / 2 - 30, 60, 60, 10);
+  rect(width - 60, height / 2 - 30, 40, 60, 8);
   fill(0);
-  textSize(24);
   textAlign(CENTER, CENTER);
-  text(">", width - 50, height / 2);
+  text(">", width - 40, height / 2);
 }
 
+// =================== CLICK HANDLING =================== //
 function mousePressed() {
-  // Clicking on the homepage
+  // Check BACK button click
+  if (backButtonHovered) {
+    if (currentStage === 'imageDetail') {
+      currentStage = 'album';
+      showGallery = true;
+      selectedImage = null;
+
+      // Reset edit state and suggestion state
+      isEditing = false;
+      suggestionsGenerated = false;
+      editSuggestions = [];
+
+      if (descInput) {
+        descInput.remove();
+        descInput = null;
+      }
+      if (editButton) {
+        editButton.remove();
+        editButton = null;
+      }
+
+    } else if (currentStage === 'album') {
+      currentStage = 'home';
+      currentPeriod = null;
+      showGallery = false;
+      showHomepage = true;
+      carouselOffset = 0;
+      currentThumbnailIndex = 0;
+    }
+  }
+
+  // Homepage album click
   if (showHomepage) {
     for (let book of bookPositions) {
       if (
-        mouseX > book.x &&
-        mouseX < book.x + book.w &&
-        mouseY > book.y &&
-        mouseY < book.y + book.h
+        mouseX > book.x && mouseX < book.x + book.w &&
+        mouseY > book.y && mouseY < book.y + book.h
       ) {
-        // Open the selected album
         currentPeriod = book.period;
+        currentStage = 'album';
         showHomepage = false;
         showGallery = true;
-        currentStage = 'album'; // Set the stage to 'album'
+        carouselOffset = 0;
+        currentThumbnailIndex = 0;
         return;
       }
     }
-  
-  }
-  if (currentStage === 'imageDetail' && this.editButtonArea) {
-    let { x, y, w, h } = this.editButtonArea;
-    if (mouseX > x && mouseX < x + w && mouseY > y && mouseY < y + h) {
-      if (isEditing) {
-        // Save changes
-        let selected = imageData.find(img => loadedImages[img.src] === selectedImage);
-        if (selected && this.descInput) {
-          selected.description = this.descInput.value();
-          saveJSON(imageData, "metadata.json");  // This won't work in browser only!
-        }
-      }
-      isEditing = !isEditing;
-      return;
-    }
-  }
-  
-  // Handle the back button click
-  if (backButtonHovered) {
-    if (currentStage === 'imageDetail') {
-      // If in the image detail view, go back to the gallery view
-      currentStage = 'album';
-      showGallery = true;
-      selectedImage = null; // Deselect the image
-    } else if (currentStage === 'album') {
-      // If in the album view, go back to the homepage
-      currentStage = 'home';
-      currentPeriod = null; // Reset the current period
-      showGallery = false; // Hide the gallery
-      showHomepage = true; // Show the homepage
-      carouselOffset = 0; // Reset the carousel offset
-      currentThumbnailIndex = 0; // Reset the thumbnail index
-    }
   }
 
-  // Handle gallery and thumbnail clicks
+  // Carousel nav or thumbnail click
   if (showGallery) {
-    // Left arrow click
+    // Left arrow
     if (mouseX > 20 && mouseX < 80 && mouseY > height / 2 - 30 && mouseY < height / 2 + 30) {
       currentThumbnailIndex = max(0, currentThumbnailIndex - 1);
       centerThumbnail(currentThumbnailIndex);
       return;
     }
-  
-    // Right arrow click
+
+    // Right arrow
     if (mouseX > width - 80 && mouseX < width - 20 && mouseY > height / 2 - 30 && mouseY < height / 2 + 30) {
       if (groups[currentPeriod]) {
         currentThumbnailIndex = min(groups[currentPeriod].length - 1, currentThumbnailIndex + 1);
@@ -362,8 +361,8 @@ function mousePressed() {
       }
       return;
     }
-  
-    // Image click detection
+
+    // Thumbnail click
     for (let i = 0; i < thumbnails.length; i++) {
       let thumb = thumbnails[i];
       if (
@@ -374,7 +373,7 @@ function mousePressed() {
       ) {
         selectedImage = thumb.img;
         showGallery = false;
-        currentStage = 'imageDetail'; // Set the stage to 'imageDetail'
+        currentStage = 'imageDetail';
         window.scrollTo(0, 0);
         return;
       }
@@ -382,148 +381,331 @@ function mousePressed() {
   }
 }
 
-function mouseWheel(event) {
-  // Check the direction of the scroll
-  if (event.delta > 0) {
-    // Scroll down (rightward in the carousel)
-    if (carouselOffset < maxScroll) {
-      carouselOffset += (thumbnailSize + 10);
-    } else {
-      carouselOffset = 0; // Loop back to the first image
-    }
-  } else {
-    // Scroll up (leftward in the carousel)
-    if (carouselOffset > 0) {
-      carouselOffset -= (thumbnailSize + 10);
-    } else {
-      carouselOffset = maxScroll; // Loop back to the last image
-    }
-  }
-  return false; // Prevent default scrolling behavior
-}
 
+// =================== CENTER THUMBNAIL =================== //
 function centerThumbnail(index) {
   if (!groups[currentPeriod]) return;
 
-  const spacing = thumbnailSize + 10;
-  const totalImages = groups[currentPeriod].length;
-  const totalWidth = totalImages * spacing - 10;
+  let spacing = thumbnailSize + 40;
+  let centerX = width / 2;
 
-  const centerOfCanvas = width / 2;
-  const targetThumbnailX = index * spacing;
+  let thumbX = 60 + index * spacing + thumbnailSize / 2; // starting margin + position
 
-  let desiredOffset = targetThumbnailX - centerOfCanvas + thumbnailSize / 2;
+  let desiredOffset = thumbX - centerX;
 
-  // Clamp the offset to stay within scrollable bounds
-  desiredOffset = constrain(desiredOffset, 0, max(0, totalWidth - width));
+  desiredOffset = constrain(desiredOffset, minScroll, maxScroll);
 
   carouselOffset = desiredOffset;
 }
 
+
+// =================== SCROLL WHEEL =================== //
+function mouseWheel(event) {
+  const scrollAmount = 60;
+
+  if (event.delta > 0) {
+    carouselOffset = min(maxScroll, carouselOffset + scrollAmount);
+  } else {
+    carouselOffset = max(minScroll, carouselOffset - scrollAmount);
+  }
+
+  return false;
+}
+
+
+// =================== DISPLAY IMAGE DETAIL PAGE =================== //
 function displayImageDetail() {
+  background(20);
+
+  if (!selectedImage) return;
+
   let maxSide = 512;
   let w = selectedImage.width;
   let h = selectedImage.height;
 
   if (w > h) {
-    w = maxSide;
     h = (selectedImage.height * maxSide) / selectedImage.width;
+    w = maxSide;
   } else {
-    h = maxSide;
     w = (selectedImage.width * maxSide) / selectedImage.height;
+    h = maxSide;
   }
 
-  // Increase verticalSpacing to move all content down by 25px
-  let verticalSpacing = 45; // Increased from 20 to 45
-  let padding = 15;
-
-  fill(0, 0, 0, 100);
-  rect(10 + 5, 30 + 5 + verticalSpacing, w + 20, h + 20);
-  fill(255);
-  rect(10, 30 + verticalSpacing, w + 20, h + 20);
-  image(selectedImage, 20, 40 + verticalSpacing, w, h);
-
-  let selected = imageData.find(
-    (img) => loadedImages[img.src] === selectedImage
-  );
+  let centerX = width / 2;
+  let imgX = centerX - w - 40;
+  let imgY = 50;
 
   fill(255);
+  rect(imgX - 10, imgY - 10, w + 20, h + 20, 10);
+  image(selectedImage, imgX, imgY, w, h);
+
+  let selected = imageData.find(img => loadedImages[img.src] === selectedImage);
+  if (!selected) return;
+
+  // 🔄 Generate description if missing
+  if (!selected.description && !descriptionGenerated) {
+    descriptionGenerated = true;
+    const base64 = encodeImg(selectedImage);
+    generateVisionContent(base64, "Describe this image in one sentence.").then((desc) => {
+      selected.description = desc || "No description available.";
+      descriptionFadeInStart = millis(); // Start fade-in when generated
+      descriptionGenerated = false;
+    }).catch(err => {
+      console.error("Failed to generate description:", err);
+      selected.description = "(Error generating description)";
+      descriptionFadeInStart = millis(); 
+      descriptionGenerated = false;
+    });
+  }
+
+  // 🔄 Generate suggestions if missing
+  if (selected.description && editSuggestions.length === 0 && !suggestionsGenerated) {
+    generateEditGuides(selected);
+    suggestionsGenerated = true;
+  }
+
+  let rightX = centerX + 40;
+  let rightW = w;
+  let currentY = imgY;
+
+  // ----- Description Label -----
+  fill(255);
+  textAlign(LEFT, CENTER);
   textSize(16);
-  textAlign(LEFT, TOP);
+  text("Description:", rightX, currentY);
 
-  let descriptionY = 40 + verticalSpacing;
-  text("Description:", w + 40, descriptionY);
+  let editButtonSize = 28;
+  let editButtonX = rightX + rightW - editButtonSize;
+  let editButtonY = currentY - 12;
 
-  textSize(14);
-  let descTextY = descriptionY + 30;
+  if (!this.editButton) {
+    this.editButton = createButton(isEditing ? "💾" : "✏️");
+    this.editButton.size(editButtonSize, editButtonSize);
+    this.editButton.style('border-radius', '50%');
+    this.editButton.style('font-size', '16px');
+    this.editButton.style('background-color', '#444');
+    this.editButton.style('color', 'white');
+    this.editButton.mousePressed(() => {
+      isEditing = !isEditing;
+      if (!isEditing && this.descInput) {
+        selected.description = this.descInput.value();
+        saveJSON(imageData, "metadata.json");
+      }
+      this.editButton.html(isEditing ? "💾" : "✏️");
+    });
+  }
+  this.editButton.position(editButtonX, editButtonY);
+  currentY += 30;
 
+  // ----- Description Text/Input -----
   if (isEditing) {
-    // Editable input box
     if (!this.descInput) {
       this.descInput = createInput(selected.description || "");
-      this.descInput.position(w + 40, descTextY);
-      this.descInput.size(width - w - 80);
+      this.descInput.elt.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          selected.description = this.descInput.value();
+          saveJSON(imageData, "metadata.json");
+          isEditing = false;
+          if (this.descInput) {
+            this.descInput.remove();
+            this.descInput = null;
+          }
+          if (this.editButton) {
+            this.editButton.html("✏️");
+          }
+        }
+      });
+
+      this.descInput.size(rightW);
+      this.descInput.position(rightX, currentY);
     }
+    currentY += 50;
   } else {
-    // Show static description
-    text(selected.description || "No description available.", w + 40, descTextY, width - w - 80);
     if (this.descInput) {
       this.descInput.remove();
       this.descInput = null;
     }
+
+    textAlign(LEFT, TOP);
+    textSize(14);
+
+    // Fade-in for description
+    if (descriptionGenerated) {
+      // While generating
+      if (millis() - lastDotUpdate > 500) {
+        loadingDots = loadingDots.length >= 3 ? "" : loadingDots + ".";
+        lastDotUpdate = millis();
+      }
+      fill(180);
+      text("- Generating description" + loadingDots, rightX, currentY);
+      currentY += 30;
+    } else {
+      // After generated, fade it in
+      let descAlpha = 255;
+      if (descriptionFadeInStart) {
+        let fadeProgress = constrain((millis() - descriptionFadeInStart) / 800, 0, 1);
+        descAlpha = lerp(0, 255, fadeProgress);
+      }
+
+      push();
+      fill(255, descAlpha);
+      let wrappedLines = wrappedTextLines(selected.description || "No description available.", rightW);
+      for (let line of wrappedLines) {
+        text(line, rightX, currentY);
+        currentY += 20;
+      }
+      pop();
+    }
   }
 
-    text(
-      selected.description || "No description available.",
-      w + 40,
-      descTextY,
-      width - w - 80
-    );
+  currentY += 20;
 
-    let tagsLabelY = descTextY + 100;
-    textSize(16);
-    text("Tags:", w + 40, tagsLabelY);
+  // ----- Suggestions -----
+  fill(255);
+  textSize(14);
+  text("Suggestions:", rightX, currentY);
+  currentY += 25;
 
-    textSize(14);
-    let tagY = tagsLabelY + 30; // Ensure tags appear clearly below the "Tags:" label
-    let tagX = w + 40;
-
-    const tagStyle = {
-      fill: color(255, 255, 255),
-      background: color(0, 102, 204),
-      borderRadius: 12,
-      padding: { x: 12, y: 8 },
-      marginRight: 12,
-      fontSize: 14,
-    };
-
-    if (selected.tags && selected.tags.length > 0) {
-      selected.tags.forEach((tag) => {
-        let tagWidth = textWidth(tag) + tagStyle.padding.x * 2;
-        let tagHeight = tagStyle.padding.y * 2;
-
-        fill(tagStyle.background);
-        noStroke();
-        rect(tagX, tagY, tagWidth, tagHeight, tagStyle.borderRadius);
-
-        fill(tagStyle.fill);
-        textAlign(LEFT, CENTER);
-        text(tag, tagX + tagStyle.padding.x, tagY + tagStyle.padding.y);
-
-        tagX += tagWidth + tagStyle.marginRight;
-      });
-    } else {
-      text("No tags available.", tagX, tagY);
+  if (isGeneratingSuggestions) {
+    if (millis() - lastDotUpdate > 500) {
+      loadingDots = loadingDots.length >= 3 ? "" : loadingDots + ".";
+      lastDotUpdate = millis();
     }
-    let buttonY = tagY + 50;
-    fill(100);
-    rect(w + 40, buttonY, 120, 35, 8);
-    fill(255);
-    textAlign(CENTER, CENTER);
-    text(isEditing ? "Save" : "Edit", w + 100, buttonY + 17);
+    fill(180);
+    text("- Generating suggestions" + loadingDots, rightX, currentY);
+    currentY += 20;
 
-    // Save click area for later detection
-    this.editButtonArea = { x: w + 40, y: buttonY, w: 120, h: 35 };
+  } else if (editSuggestions.length > 0) {
+    let fadeProgress = constrain((millis() - suggestionFadeInStart) / suggestionFadeDuration, 0, 1);
+    suggestionAlpha = lerp(suggestionAlpha, 255, fadeProgress);
 
+    push();
+    fill(255, suggestionAlpha);
+    for (let suggestion of editSuggestions) {
+      let lines = wrappedTextLines(suggestion, rightW);
+      for (let line of lines) {
+        text("- " + line, rightX, currentY);
+        currentY += 20;
+      }
+      currentY += 10;
+    }
+    pop();
+
+  } else {
+    fill(180);
+    text("- (No suggestions available)", rightX, currentY);
+    currentY += 20;
+  }
+
+  currentY += 30;
+
+  // ----- Tags -----
+  if (selected.tags && selected.tags.length > 0) {
+    let tagX = rightX;
+    let tagY = currentY;
+    let tagSpacing = 8;
+    textSize(14);
+
+    for (let tag of selected.tags) {
+      let tw = textWidth(tag) + 24;
+      if (tagX + tw > rightX + rightW) {
+        tagX = rightX;
+        tagY += 40;
+      }
+
+      fill(0, 102, 204);
+      noStroke();
+      rect(tagX, tagY, tw, 30, 12);
+
+      fill(255);
+      textAlign(LEFT, CENTER);
+      text(tag, tagX + 12, tagY + 15);
+
+      tagX += tw + tagSpacing;
+    }
+  } else {
+    text("(No tags available)", rightX, currentY);
+  }
 }
 
+
+function generateEditGuides(selected) {
+  if (!selected) return;
+
+  const prompt = `
+    Given the following image description and tags, suggest 2 ways that guide the user to personalize it more.
+
+    Description: "${selected.description || "No description."}"
+    Tags: ${selected.tags ? selected.tags.join(', ') : "No tags."}
+
+    Make the suggestions guides user to make something:
+    - Personal (mention feelings, memories, or context)
+    - Brief (one sentence each)
+    - Easy to follow
+  `;
+
+  isGeneratingSuggestions = true;
+  editSuggestions = [];  // Clear old suggestions while loading
+
+  generateGeminiText(prompt).then(response => {
+    console.log("🔍 Full Gemini API response:", response);
+
+    let text = "";
+
+    try {
+      if (typeof response === "string") {
+        text = response;
+      } else if (response.candidates && response.candidates.length > 0) {
+        const parts = response.candidates[0].content.parts;
+        if (parts && parts.length > 0 && parts[0].text) {
+          text = parts[0].text;
+        }
+      }
+
+      if (text.trim().length > 0) {
+        editSuggestions = text.split(/\n+/).map(line => line.trim()).filter(line => line.length > 0);
+      } else {
+        editSuggestions = ["(No suggestions available)"];
+      }
+
+    } catch (error) {
+      console.error("❌ Error parsing Gemini response:", error);
+      editSuggestions = ["(Failed to extract suggestions)"];
+    }
+
+    isGeneratingSuggestions = false;
+    suggestionAlpha = 0;
+    suggestionFadeInStart = millis(); // Start fade timing
+
+  }).catch(error => {
+    console.error("❌ Error contacting Gemini:", error);
+    editSuggestions = ["(Error fetching suggestions)"];
+    isGeneratingSuggestions = false;
+    suggestionAlpha = 0;
+    suggestionFadeInStart = millis(); // Start fade timing
+
+  });
+}
+
+function wrappedTextLines(txt, maxWidth, textSizeValue = 14) {
+  textSize(textSizeValue);
+  let words = txt.split(' ');
+  let lines = [];
+  let line = '';
+
+  for (let word of words) {
+    let testLine = line + word + ' ';
+    if (textWidth(testLine) > maxWidth && line !== '') {
+      lines.push(line.trim());
+      line = word + ' ';
+    } else {
+      line = testLine;
+    }
+  }
+
+  if (line !== '') {
+    lines.push(line.trim());
+  }
+
+  return lines;
+}
