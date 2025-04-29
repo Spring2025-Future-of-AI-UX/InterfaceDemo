@@ -41,3 +41,34 @@ let API_URL = "https://generativelanguage.googleapis.com/v1beta/models";
    }
  }
  
+ // Call Gemini model for text-only generation
+async function generateGeminiText(prompt = "Suggest a personalized description.", model = "gemini-1.5-pro") {
+  const REQUEST_URL = `${API_URL}/${model}:generateContent?key=${GOOGLE_API_KEY}`;
+
+  const res = await fetch(REQUEST_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      contents: [
+        {
+          parts: [
+            { text: prompt }
+          ]
+        }
+      ]
+    })
+  });
+
+  const json = await res.json();
+
+  if (json && json.candidates && json.candidates[0]) {
+    return json.candidates[0].content.parts[0].text;
+  } else {
+    console.error("Invalid API response:", json);
+    return "Suggestion unavailable.";
+  }
+}
+
+ 
