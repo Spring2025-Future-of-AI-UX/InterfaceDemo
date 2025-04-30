@@ -112,23 +112,6 @@ function draw() {
   }
 }
 
-// =================== Loading Spinner =================== //
-// function displayLoadingScreen() {
-//   background(20);
-//   fill(255);
-//   textAlign(CENTER, CENTER);
-//   textSize(18);
-//   text("Eidolon: Welcome back to your memory archive...", width / 2, height / 2 - 40);
-
-//   push();
-//   translate(width / 2, height / 2 + 20);
-//   rotate(radians(frameCount * 5));
-//   stroke(255);
-//   strokeWeight(3);
-//   noFill();
-//   arc(0, 0, 40, 40, 0, PI + QUARTER_PI);
-//   pop();
-// }
 
 // =================== CATEGORIZE BY YEAR =================== //
 function categorizeImages() {
