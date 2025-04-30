@@ -137,21 +137,24 @@ async function handleSearch() {
   const stopwords = ["a", "an", "the", "and", "with", "of", "to", "in", "on", "for", "by", "is", "at", "from", "as"];
   const queryWords = query.split(/\s+/).filter(word => !stopwords.includes(word));
 
-  // Get synonyms for each query word
+  // Fetch synonyms for each word
   const synonymLists = await Promise.all(queryWords.map(word => getSynonyms(word)));
-  const allWords = queryWords.concat(...synonymLists);
+  const allTerms = new Set([...queryWords, ...synonymLists.flat()]);
 
   const results = imageData.filter((img) => {
     const desc = img.description?.toLowerCase() || "";
     const tags = (img.tags || []).map(tag => tag.toLowerCase());
     const combinedText = desc + " " + tags.join(" ");
-    return allWords.some(word => combinedText.includes(word));
+    
+    // Check if ANY term matches (use .some instead of .every for broader match)
+    return [...allTerms].some(term => combinedText.includes(term));
   });
 
   groups = { Search: results };
   currentPeriod = "Search";
   currentStage = 'album';
 }
+
 
 
 // =================== DRAW BACK BUTTON =================== //
