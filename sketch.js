@@ -72,47 +72,7 @@ function preload() {
       loadedImages[img.src] = p5img;
     }
   });
-}
 
-async function loadWhisperModel() {
-  try {
-    transformers = await import("https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2");
-    pipe = await transformers.pipeline("automatic-speech-recognition", "Xenova/whisper-tiny.en", { dtype: "q8" });
-    console.log("✅ Whisper model loaded");
-  } catch (error) {
-    console.error("❌ Failed to load Whisper model:", error);
-  }
-}
-
-async function toggleRecording() {
-  if (!pipe) {
-    console.warn("Whisper model not loaded.");
-    return;
-  }
-
-  if (!isRecording) {
-    recorder.record(soundFile, 5, async () => {
-      isRecording = false;
-      recordButton.html("🎤 Start Recording");
-
-      const raw = soundFile.buffer.getChannelData(0);
-      const resampled = await resample(raw, soundFile.sampleRate(), 16000);
-
-      const result = await pipe(resampled);
-      const transcript = result.text.trim();
-
-      if (descInput) {
-        let current = descInput.value();
-        descInput.value(current + " " + transcript);
-      }
-    });
-
-    isRecording = true;
-    recordButton.html("⏹️ Stop Recording");
-
-  } else {
-    recorder.stop();
-  }
 }
 
 // =================== SETUP =================== //
@@ -121,25 +81,54 @@ function setup() {
   textSize(16);
   textAlign(LEFT, TOP);
 
-  loadWhisperModel(); // load the model independently
   categorizeImages();
-  initTagger(); // to initialize the POS tagger
+  initTagger();
 
-  mMic = new p5.AudioIn();
-  mRecSound = new p5.SoundFile();
-  mRecorder = new p5.SoundRecorder();
-  mRecorder.setInput(mMic);
-
-  // Setup search bar
   searchInput = createInput();
   searchInput.position(width / 2 - 250, 30);
   searchInput.size(500);
   searchInput.attribute("placeholder", "Search by tag or description...");
   searchInput.input(handleSearch);
-
   searchInput.style('border-radius', '16px');
   searchInput.style('padding', '10px');
 }
+
+// =================== DRAW =================== //
+function draw() {
+
+  background(20);
+
+  if (showHomepage) {
+    displayAlbums();
+    searchInput.show();
+  } else if (showGallery) {
+    displayThumbnails();
+    drawBackButton();
+    searchInput.show();
+  } else if (selectedImage) {
+    displayImageDetail();
+    drawBackButton();
+    searchInput.hide();
+  }
+}
+
+// =================== Loading Spinner =================== //
+// function displayLoadingScreen() {
+//   background(20);
+//   fill(255);
+//   textAlign(CENTER, CENTER);
+//   textSize(18);
+//   text("Eidolon: Welcome back to your memory archive...", width / 2, height / 2 - 40);
+
+//   push();
+//   translate(width / 2, height / 2 + 20);
+//   rotate(radians(frameCount * 5));
+//   stroke(255);
+//   strokeWeight(3);
+//   noFill();
+//   arc(0, 0, 40, 40, 0, PI + QUARTER_PI);
+//   pop();
+// }
 
 // =================== CATEGORIZE BY YEAR =================== //
 function categorizeImages() {
@@ -184,31 +173,6 @@ function handleSearch() {
   currentStage = 'album';
 }
 
-// =================== DRAW =================== //
-function draw() {
-  background(20);
-
-  if (showHomepage) {
-    displayAlbums();
-    searchInput.show();
-  } else if (showGallery) {
-    displayThumbnails();
-    drawBackButton();
-    searchInput.show();
-  } else if (selectedImage) {
-    displayImageDetail();
-    drawBackButton();
-    searchInput.hide();
-    if (isRecording) {
-      fill(255, 100, 100);
-      text("Recording...", micButtonX, buttonY - 30);
-    }
-    
-  }
-
-  
-}
-
 // =================== DRAW BACK BUTTON =================== //
 function drawBackButton() {
   let x = 20;
@@ -234,8 +198,13 @@ function displayAlbums() {
   clear();
   resizeCanvas(windowWidth, windowHeight);
 
+  let totalRows = ceil(Object.keys(groups).length / floor((width - 60) / 120));
+  let totalHeight = totalRows * (240 + shelfMargin);
+  let startY = max((height - totalHeight) / 2, 100);
+
   let bookX = 40;
-  let bookY = 100;
+  let bookY = startY;
+
   bookPositions = [];
 
   for (let i = 0; i < Object.keys(groups).length; i++) {
@@ -259,18 +228,21 @@ function displayAlbums() {
 
     let displayColor = isHovered ? lerpColor(baseColor, color(255), 0.3) : baseColor;
 
-    if (isHovered) {
-      fill(0, 50);
-      noStroke();
-      rect(bookX + 5, bookY + 5, bookWidth, bookHeight, 5);
-    }
+    // Always draw shadow
+    fill(0, 50);
+    noStroke();
+    rect(bookX + 5, bookY + 5, bookWidth, bookHeight, 5);
+
 
     fill(displayColor);
-    noStroke();
+    stroke(80);
+    strokeWeight(1);
     rect(bookX, bookY, bookWidth, bookHeight, 5);
 
     fill(100);
+    noStroke();
     rect(bookX + bookWidth - 10, bookY, 10, bookHeight, 3);
+
 
     fill(255);
     push();
@@ -493,7 +465,16 @@ function displayImageDetail() {
 
   let centerX = width / 2;
   let imgX = centerX - w - 40;
-  let imgY = 50;
+
+  // Estimate content height
+  let estimatedImageHeight = h;
+  let estimatedTextHeight = 400; // rough height for description + suggestions + tags
+  let contentHeight = Math.max(estimatedImageHeight, estimatedTextHeight);
+  let startY = max((height - contentHeight) / 2, 40);  // Minimum padding
+
+  let imgY = startY;
+  let currentY = startY;
+
 
   fill(255);
   rect(imgX - 10, imgY - 10, w + 20, h + 20, 10);
@@ -530,20 +511,16 @@ function displayImageDetail() {
 
   let rightX = centerX + 40;
   let rightW = w;
-  let currentY = imgY;
+  //let currentY = imgY;
 
-  // ----- Description Label & Buttons ----- 
+  // ----- Description Label & Buttons -----
   fill(255);
   textSize(16);
   textAlign(LEFT, CENTER);
   text("Description:", rightX, currentY);
 
-  let editButtonSize = 28;
-  let editButtonY = currentY - 12;
-
   let buttonSize = 28;
   let editButtonX = rightX + rightW - buttonSize;
-  let micButtonX = editButtonX - buttonSize - 10;
   let buttonY = currentY - 12;
 
   // ✏️ Edit Button
@@ -567,83 +544,6 @@ function displayImageDetail() {
     });
   }
   this.editButton.position(editButtonX, buttonY);
-
-  // 🎤 Mic Button
-  if (!this.micButton) {
-    this.micButton = createButton("🎤");
-    this.micButton.size(buttonSize, buttonSize);
-    this.micButton.style('border-radius', '50%');
-    this.micButton.style('font-size', '16px');
-    this.micButton.style('background-color', '#666');
-    this.micButton.style('color', 'white');
-    this.micButton.mousePressed(async () => {
-      if (isRecording) return;
-
-      try {
-        await getAudioContext().resume();
-        if (!mMic.enabled) await mMic.start();
-        mRecorder.setInput(mMic);
-
-        isRecording = true;
-        this.micButton.html("🔴");
-
-        if (!stopButton) {
-          stopButton = createButton("⏹");
-          stopButton.position(micButtonX - 40, buttonY);
-          stopButton.size(buttonSize, buttonSize);
-          stopButton.style('border-radius', '50%');
-          stopButton.style('font-size', '16px');
-          stopButton.style('background-color', '#900');
-          stopButton.style('color', 'white');
-          stopButton.mousePressed(() => {
-            mRecorder.stop();
-            isRecording = false;
-            this.micButton.html("🎤");
-            stopButton.remove();
-            stopButton = null;
-          });
-        }
-
-        mRecorder.record(mRecSound, 3, async () => {
-          console.log("✅ Recording complete.");
-          isRecording = false;
-          if (stopButton) stopButton.remove();
-          stopButton = null;
-          this.micButton.html("🎤");
-
-          if (mRecSound.buffer && mRecSound.buffer.length > 0) {
-            const audio = mRecSound.buffer.getChannelData(0);
-            const sampleRate = mRecSound.buffer.sampleRate;
-
-            if (audio && sampleRate > 0) {
-              try {
-                const samples16k = await resample(audio, sampleRate, 16000);
-                const result = await pipe(samples16k);
-                console.log("📝 Transcription:", result.text);
-
-                if (isEditing && this.descInput) {
-                  const current = this.descInput.value();
-                  this.descInput.value(current + " " + result.text);
-                }
-              } catch (error) {
-                console.error("🚫 Transcription failed:", error);
-              }
-            } else {
-              console.warn("⚠️ Invalid audio data.");
-            }
-          } else {
-            console.warn("⚠️ No audio buffer available.");
-          }
-        });
-
-      } catch (error) {
-        console.error("🎤 Mic error:", error);
-        isRecording = false;
-        this.micButton.html("🎤");
-      }
-    });
-  }
-  this.micButton.position(micButtonX, buttonY);
 
   currentY += 30;
 
@@ -751,6 +651,7 @@ function displayImageDetail() {
   }
 }
 
+
 function generateEditGuides(selected) {
   if (!selected) return;
 
@@ -830,4 +731,48 @@ function wrappedTextLines(txt, maxWidth, textSizeValue = 14) {
   }
 
   return lines;
+}
+
+
+
+
+async function loadWhisperModel() {
+  try {
+    transformers = await import("https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2");
+    pipe = await transformers.pipeline("automatic-speech-recognition", "Xenova/whisper-tiny.en", { dtype: "q8" });
+    console.log("✅ Whisper model loaded");
+  } catch (error) {
+    console.error("❌ Failed to load Whisper model:", error);
+  }
+}
+
+async function toggleRecording() {
+  if (!pipe) {
+    console.warn("Whisper model not loaded.");
+    return;
+  }
+
+  if (!isRecording) {
+    recorder.record(soundFile, 5, async () => {
+      isRecording = false;
+      recordButton.html("🎤 Start Recording");
+
+      const raw = soundFile.buffer.getChannelData(0);
+      const resampled = await resample(raw, soundFile.sampleRate(), 16000);
+
+      const result = await pipe(resampled);
+      const transcript = result.text.trim();
+
+      if (descInput) {
+        let current = descInput.value();
+        descInput.value(current + " " + transcript);
+      }
+    });
+
+    isRecording = true;
+    recordButton.html("⏹️ Stop Recording");
+
+  } else {
+    recorder.stop();
+  }
 }
