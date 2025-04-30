@@ -42,15 +42,25 @@ let lastDotUpdate = 0;
 let isGeneratingDescription = false;
 let descriptionDots = "";
 let descriptionDotTimer = 0;
+let descriptionFadeInStart = null;
 
 let suggestionAlpha = 0;       // For fade-in
 let suggestionFadeInStart = 0; // When fade started
 let suggestionFadeDuration = 800; // ms
 
-let winkPosTagger;
-let nTags = ["NN", "NNS", "NNP", "NNPS"];
+let tagAlpha = 0;
+let tagFadeInStart = null;
+let tagFadeDuration = 800; // ms
 
+let mMic, mRecorder, mRecSound;
+let isRecording = false;
+let micButton;
 
+let transformers, pipe;
+let transcript = "";
+
+let stopButton = null;
+let micButtonX, buttonY;
 
 // =================== PRELOAD =================== //
 function preload() {
@@ -64,13 +74,61 @@ function preload() {
   });
 }
 
+async function loadWhisperModel() {
+  try {
+    transformers = await import("https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2");
+    pipe = await transformers.pipeline("automatic-speech-recognition", "Xenova/whisper-tiny.en", { dtype: "q8" });
+    console.log("✅ Whisper model loaded");
+  } catch (error) {
+    console.error("❌ Failed to load Whisper model:", error);
+  }
+}
+
+async function toggleRecording() {
+  if (!pipe) {
+    console.warn("Whisper model not loaded.");
+    return;
+  }
+
+  if (!isRecording) {
+    recorder.record(soundFile, 5, async () => {
+      isRecording = false;
+      recordButton.html("🎤 Start Recording");
+
+      const raw = soundFile.buffer.getChannelData(0);
+      const resampled = await resample(raw, soundFile.sampleRate(), 16000);
+
+      const result = await pipe(resampled);
+      const transcript = result.text.trim();
+
+      if (descInput) {
+        let current = descInput.value();
+        descInput.value(current + " " + transcript);
+      }
+    });
+
+    isRecording = true;
+    recordButton.html("⏹️ Stop Recording");
+
+  } else {
+    recorder.stop();
+  }
+}
+
 // =================== SETUP =================== //
 function setup() {
   createCanvas(windowWidth, windowHeight);
   textSize(16);
   textAlign(LEFT, TOP);
 
+  loadWhisperModel(); // load the model independently
   categorizeImages();
+  initTagger(); // to initialize the POS tagger
+
+  mMic = new p5.AudioIn();
+  mRecSound = new p5.SoundFile();
+  mRecorder = new p5.SoundRecorder();
+  mRecorder.setInput(mMic);
 
   // Setup search bar
   searchInput = createInput();
@@ -126,7 +184,6 @@ function handleSearch() {
   currentStage = 'album';
 }
 
-
 // =================== DRAW =================== //
 function draw() {
   background(20);
@@ -142,6 +199,11 @@ function draw() {
     displayImageDetail();
     drawBackButton();
     searchInput.hide();
+    if (isRecording) {
+      fill(255, 100, 100);
+      text("Recording...", micButtonX, buttonY - 30);
+    }
+    
   }
 
   
@@ -381,7 +443,6 @@ function mousePressed() {
   }
 }
 
-
 // =================== CENTER THUMBNAIL =================== //
 function centerThumbnail(index) {
   if (!groups[currentPeriod]) return;
@@ -416,7 +477,6 @@ function mouseWheel(event) {
 // =================== DISPLAY IMAGE DETAIL PAGE =================== //
 function displayImageDetail() {
   background(20);
-
   if (!selectedImage) return;
 
   let maxSide = 512;
@@ -442,23 +502,27 @@ function displayImageDetail() {
   let selected = imageData.find(img => loadedImages[img.src] === selectedImage);
   if (!selected) return;
 
-  // 🔄 Generate description if missing
+  // 🧠 Description generation
   if (!selected.description && !descriptionGenerated) {
     descriptionGenerated = true;
+    isGeneratingDescription = true;
     const base64 = encodeImg(selectedImage);
     generateVisionContent(base64, "Describe this image in one sentence.").then((desc) => {
       selected.description = desc || "No description available.";
-      descriptionFadeInStart = millis(); // Start fade-in when generated
+      updateTagsFromDescription(selected);
+      descriptionFadeInStart = millis();
       descriptionGenerated = false;
+      isGeneratingDescription = false;
     }).catch(err => {
-      console.error("Failed to generate description:", err);
+      console.error("❌ Failed to generate description:", err);
       selected.description = "(Error generating description)";
-      descriptionFadeInStart = millis(); 
+      descriptionFadeInStart = millis();
       descriptionGenerated = false;
+      isGeneratingDescription = false;
     });
   }
 
-  // 🔄 Generate suggestions if missing
+  // 💬 Suggestions
   if (selected.description && editSuggestions.length === 0 && !suggestionsGenerated) {
     generateEditGuides(selected);
     suggestionsGenerated = true;
@@ -468,19 +532,24 @@ function displayImageDetail() {
   let rightW = w;
   let currentY = imgY;
 
-  // ----- Description Label -----
+  // ----- Description Label & Buttons ----- 
   fill(255);
-  textAlign(LEFT, CENTER);
   textSize(16);
+  textAlign(LEFT, CENTER);
   text("Description:", rightX, currentY);
 
   let editButtonSize = 28;
-  let editButtonX = rightX + rightW - editButtonSize;
   let editButtonY = currentY - 12;
 
+  let buttonSize = 28;
+  let editButtonX = rightX + rightW - buttonSize;
+  let micButtonX = editButtonX - buttonSize - 10;
+  let buttonY = currentY - 12;
+
+  // ✏️ Edit Button
   if (!this.editButton) {
     this.editButton = createButton(isEditing ? "💾" : "✏️");
-    this.editButton.size(editButtonSize, editButtonSize);
+    this.editButton.size(buttonSize, buttonSize);
     this.editButton.style('border-radius', '50%');
     this.editButton.style('font-size', '16px');
     this.editButton.style('background-color', '#444');
@@ -489,33 +558,110 @@ function displayImageDetail() {
       isEditing = !isEditing;
       if (!isEditing && this.descInput) {
         selected.description = this.descInput.value();
+        updateTagsFromDescription(selected);
         saveJSON(imageData, "metadata.json");
+        this.descInput.remove();
+        this.descInput = null;
+        this.editButton.html("✏️");
       }
-      this.editButton.html(isEditing ? "💾" : "✏️");
     });
   }
-  this.editButton.position(editButtonX, editButtonY);
+  this.editButton.position(editButtonX, buttonY);
+
+  // 🎤 Mic Button
+  if (!this.micButton) {
+    this.micButton = createButton("🎤");
+    this.micButton.size(buttonSize, buttonSize);
+    this.micButton.style('border-radius', '50%');
+    this.micButton.style('font-size', '16px');
+    this.micButton.style('background-color', '#666');
+    this.micButton.style('color', 'white');
+    this.micButton.mousePressed(async () => {
+      if (isRecording) return;
+
+      try {
+        await getAudioContext().resume();
+        if (!mMic.enabled) await mMic.start();
+        mRecorder.setInput(mMic);
+
+        isRecording = true;
+        this.micButton.html("🔴");
+
+        if (!stopButton) {
+          stopButton = createButton("⏹");
+          stopButton.position(micButtonX - 40, buttonY);
+          stopButton.size(buttonSize, buttonSize);
+          stopButton.style('border-radius', '50%');
+          stopButton.style('font-size', '16px');
+          stopButton.style('background-color', '#900');
+          stopButton.style('color', 'white');
+          stopButton.mousePressed(() => {
+            mRecorder.stop();
+            isRecording = false;
+            this.micButton.html("🎤");
+            stopButton.remove();
+            stopButton = null;
+          });
+        }
+
+        mRecorder.record(mRecSound, 3, async () => {
+          console.log("✅ Recording complete.");
+          isRecording = false;
+          if (stopButton) stopButton.remove();
+          stopButton = null;
+          this.micButton.html("🎤");
+
+          if (mRecSound.buffer && mRecSound.buffer.length > 0) {
+            const audio = mRecSound.buffer.getChannelData(0);
+            const sampleRate = mRecSound.buffer.sampleRate;
+
+            if (audio && sampleRate > 0) {
+              try {
+                const samples16k = await resample(audio, sampleRate, 16000);
+                const result = await pipe(samples16k);
+                console.log("📝 Transcription:", result.text);
+
+                if (isEditing && this.descInput) {
+                  const current = this.descInput.value();
+                  this.descInput.value(current + " " + result.text);
+                }
+              } catch (error) {
+                console.error("🚫 Transcription failed:", error);
+              }
+            } else {
+              console.warn("⚠️ Invalid audio data.");
+            }
+          } else {
+            console.warn("⚠️ No audio buffer available.");
+          }
+        });
+
+      } catch (error) {
+        console.error("🎤 Mic error:", error);
+        isRecording = false;
+        this.micButton.html("🎤");
+      }
+    });
+  }
+  this.micButton.position(micButtonX, buttonY);
+
   currentY += 30;
 
-  // ----- Description Text/Input -----
+  // 📝 Description content
   if (isEditing) {
     if (!this.descInput) {
       this.descInput = createInput(selected.description || "");
       this.descInput.elt.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
           selected.description = this.descInput.value();
+          updateTagsFromDescription(selected);
           saveJSON(imageData, "metadata.json");
           isEditing = false;
-          if (this.descInput) {
-            this.descInput.remove();
-            this.descInput = null;
-          }
-          if (this.editButton) {
-            this.editButton.html("✏️");
-          }
+          this.descInput.remove();
+          this.descInput = null;
+          this.editButton.html("✏️");
         }
       });
-
       this.descInput.size(rightW);
       this.descInput.position(rightX, currentY);
     }
@@ -528,10 +674,7 @@ function displayImageDetail() {
 
     textAlign(LEFT, TOP);
     textSize(14);
-
-    // Fade-in for description
-    if (descriptionGenerated) {
-      // While generating
+    if (isGeneratingDescription) {
       if (millis() - lastDotUpdate > 500) {
         loadingDots = loadingDots.length >= 3 ? "" : loadingDots + ".";
         lastDotUpdate = millis();
@@ -540,17 +683,10 @@ function displayImageDetail() {
       text("- Generating description" + loadingDots, rightX, currentY);
       currentY += 30;
     } else {
-      // After generated, fade it in
-      let descAlpha = 255;
-      if (descriptionFadeInStart) {
-        let fadeProgress = constrain((millis() - descriptionFadeInStart) / 800, 0, 1);
-        descAlpha = lerp(0, 255, fadeProgress);
-      }
-
       push();
-      fill(255, descAlpha);
-      let wrappedLines = wrappedTextLines(selected.description || "No description available.", rightW);
-      for (let line of wrappedLines) {
+      let alpha = descriptionFadeInStart ? lerp(0, 255, constrain((millis() - descriptionFadeInStart) / 800, 0, 1)) : 255;
+      fill(255, alpha);
+      for (let line of wrappedTextLines(selected.description || "", rightW)) {
         text(line, rightX, currentY);
         currentY += 20;
       }
@@ -560,9 +696,7 @@ function displayImageDetail() {
 
   currentY += 20;
 
-  // ----- Suggestions -----
-  fill(255);
-  textSize(14);
+  // ✨ Suggestions
   text("Suggestions:", rightX, currentY);
   currentY += 25;
 
@@ -574,23 +708,17 @@ function displayImageDetail() {
     fill(180);
     text("- Generating suggestions" + loadingDots, rightX, currentY);
     currentY += 20;
-
   } else if (editSuggestions.length > 0) {
-    let fadeProgress = constrain((millis() - suggestionFadeInStart) / suggestionFadeDuration, 0, 1);
-    suggestionAlpha = lerp(suggestionAlpha, 255, fadeProgress);
-
     push();
-    fill(255, suggestionAlpha);
+    fill(255, suggestionAlpha = lerp(suggestionAlpha, 255, constrain((millis() - suggestionFadeInStart) / suggestionFadeDuration, 0, 1)));
     for (let suggestion of editSuggestions) {
-      let lines = wrappedTextLines(suggestion, rightW);
-      for (let line of lines) {
+      for (let line of wrappedTextLines(suggestion, rightW)) {
         text("- " + line, rightX, currentY);
         currentY += 20;
       }
       currentY += 10;
     }
     pop();
-
   } else {
     fill(180);
     text("- (No suggestions available)", rightX, currentY);
@@ -599,35 +727,29 @@ function displayImageDetail() {
 
   currentY += 30;
 
-  // ----- Tags -----
+  // 🏷 Tags
   if (selected.tags && selected.tags.length > 0) {
     let tagX = rightX;
     let tagY = currentY;
-    let tagSpacing = 8;
     textSize(14);
-
     for (let tag of selected.tags) {
       let tw = textWidth(tag) + 24;
       if (tagX + tw > rightX + rightW) {
         tagX = rightX;
         tagY += 40;
       }
-
       fill(0, 102, 204);
       noStroke();
       rect(tagX, tagY, tw, 30, 12);
-
       fill(255);
       textAlign(LEFT, CENTER);
       text(tag, tagX + 12, tagY + 15);
-
-      tagX += tw + tagSpacing;
+      tagX += tw + 8;
     }
   } else {
     text("(No tags available)", rightX, currentY);
   }
 }
-
 
 function generateEditGuides(selected) {
   if (!selected) return;
