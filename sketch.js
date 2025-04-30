@@ -126,7 +126,7 @@ function categorizeImages() {
 }
 
 // =================== SEARCH FUNCTION (AND logic) =================== //
-function handleSearch() {
+async function handleSearch() {
   const query = searchInput.value().toLowerCase().trim();
   if (query === "") {
     categorizeImages();
@@ -134,27 +134,25 @@ function handleSearch() {
     return;
   }
 
-  // List of common stopwords to ignore
   const stopwords = ["a", "an", "the", "and", "with", "of", "to", "in", "on", "for", "by", "is", "at", "from", "as"];
-  
-  // Break query into meaningful terms
   const queryWords = query.split(/\s+/).filter(word => !stopwords.includes(word));
+
+  // Get synonyms for each query word
+  const synonymLists = await Promise.all(queryWords.map(word => getSynonyms(word)));
+  const allWords = queryWords.concat(...synonymLists);
 
   const results = imageData.filter((img) => {
     const desc = img.description?.toLowerCase() || "";
     const tags = (img.tags || []).map(tag => tag.toLowerCase());
-
-    // Combine description and tags into one string for easier matching
     const combinedText = desc + " " + tags.join(" ");
-
-    // Check if ALL important query words are in combined text
-    return queryWords.every(word => combinedText.includes(word));
+    return allWords.some(word => combinedText.includes(word));
   });
 
   groups = { Search: results };
   currentPeriod = "Search";
   currentStage = 'album';
 }
+
 
 // =================== DRAW BACK BUTTON =================== //
 function drawBackButton() {
@@ -196,7 +194,7 @@ function displayAlbums() {
     let numImages = albumImages.length;
 
     let bookWidth = 60 + numImages * 2;
-    let bookHeight = 240;
+    let bookHeight = 360;
 
     let year = parseInt(period);
     let ageFactor = (new Date().getFullYear() - year) / 50;
@@ -533,9 +531,29 @@ function displayImageDetail() {
   // 📝 Description content
   if (isEditing) {
     if (!this.descInput) {
-      this.descInput = createInput(selected.description || "");
+      this.descInput = createElement('textarea', selected.description || "");
+      this.descInput.style('resize', 'none');
+      this.descInput.style('font-size', '14px');
+      this.descInput.style('line-height', '20px');
+      this.descInput.style('padding', '6px');
+      this.descInput.style('border-radius', '6px');
+      this.descInput.style('border', '1px solid #aaa');
+      this.descInput.style('background-color', '#222');
+      this.descInput.style('color', 'white');
+      this.descInput.style('overflow', 'hidden');
+      this.descInput.style('box-sizing', 'border-box');
+      this.descInput.attribute('rows', 1); // Just so it shows up
+    
+      this.descInput.position(rightX, currentY);
+      this.descInput.size(rightW, getDescriptionHeight(selected.description || "", rightW));
+    
+      this.descInput.elt.addEventListener('input', () => {
+        this.descInput.size(rightW, getDescriptionHeight(this.descInput.value(), rightW));
+      });
+    
       this.descInput.elt.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
           selected.description = this.descInput.value();
           updateTagsFromDescription(selected);
           saveJSON(imageData, "metadata.json");
@@ -545,10 +563,9 @@ function displayImageDetail() {
           this.editButton.html("✏️");
         }
       });
-      this.descInput.size(rightW);
-      this.descInput.position(rightX, currentY);
     }
-    currentY += 50;
+    currentY += getDescriptionHeight(this.descInput.value(), rightW);
+    
   } else {
     if (this.descInput) {
       this.descInput.remove();
@@ -715,6 +732,14 @@ function wrappedTextLines(txt, maxWidth, textSizeValue = 14) {
 
   return lines;
 }
+
+function getDescriptionHeight(text, maxWidth) {
+  let lines = wrappedTextLines(text, maxWidth);
+  return lines.length * 20 + 10;
+}
+
+
+
 
 
 
