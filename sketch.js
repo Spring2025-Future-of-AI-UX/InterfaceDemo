@@ -135,19 +135,28 @@ async function handleSearch() {
   }
 
   const stopwords = ["a", "an", "the", "and", "with", "of", "to", "in", "on", "for", "by", "is", "at", "from", "as"];
-  const queryWords = query.split(/\s+/).filter(word => !stopwords.includes(word));
+  // Break query into meaningful terms (ignore short/non-alphabetic/stopwords)
+  const queryWords = query
+    .split(/\s+/)
+    .filter(word => word.length > 2 && /^[a-zA-Z]+$/.test(word) && !stopwords.includes(word));
 
-  // Fetch synonyms for each word
+
+  // Fetch synonyms for each query word from Datamuse
   const synonymLists = await Promise.all(queryWords.map(word => getSynonyms(word)));
   const allTerms = new Set([...queryWords, ...synonymLists.flat()]);
 
+  // 🔍 Log query words and their synonyms
+  console.log("🔍 Query terms and synonyms:");
+  queryWords.forEach((word, i) => {
+    console.log(`- ${word}:`, synonymLists[i]);
+  });
+
+  // Filter images using all collected terms
   const results = imageData.filter((img) => {
     const desc = img.description?.toLowerCase() || "";
     const tags = (img.tags || []).map(tag => tag.toLowerCase());
     const combinedText = desc + " " + tags.join(" ");
-    
-    // Check if ANY term matches (use .some instead of .every for broader match)
-    return [...allTerms].some(term => combinedText.includes(term));
+    return Array.from(allTerms).some(term => combinedText.includes(term));
   });
 
   groups = { Search: results };
