@@ -171,7 +171,6 @@
             "face",
             "text",
             "photo",
-            "Szymborska",
             "bottom",
             "corner"
         ]
@@ -317,6 +316,12 @@
     },
     {
         "src": "imgs/ImgTest1.jpg",
+        "date": "2025-04-09",
+        "description": "",
+        "tags": []
+    },
+    {
+        "src": "imgs/ImgTest2.jpg",
         "date": "2025-04-09",
         "description": "",
         "tags": []
