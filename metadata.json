@@ -2,59 +2,79 @@
     {
         "src": "imgs/Img1.jpg",
         "date": "2023-08-19",
-        "description": "Two slightly blurry photographs show two young children, possibly siblings, in different settings, one outdoors near a railing and the other indoors in a kitchen or playroom.",
+        "description": "Two slightly blurry photographs show two young children, my sister and me, in different settings, one outdoors near a railing and the other indoors in a kitchen. I honestly don't remember that was happeninig, or when did I took a picture of the page of a photo album. But it was fun looking at these old pictures.",
         "tags": [
             "photographs",
             "children",
-            "siblings",
+            "sister",
             "settings",
             "railing",
             "kitchen",
-            "playroom"
+            "picture",
+            "page",
+            "photo",
+            "album"
         ]
     },
     {
         "src": "imgs/Img2.jpg",
         "date": "2023-08-19",
-        "description": "A newborn baby, wrapped in a white hospital blanket, lies asleep in a bassinet.",
+        "description": "A picture of me when I was a newborn baby, wrapped in a white hospital blanket, lies asleep in a bassinet. I remembered the first time I looked at this picture with my mom, she told me that they took this picture because I looked sort of like an alien. Of course, she said it jokingly.",
         "tags": [
+            "picture",
             "baby",
             "hospital",
             "blanket",
-            "bassinet"
+            "bassinet",
+            "time",
+            "mom",
+            "alien"
         ]
     },
     {
         "src": "imgs/Img3.jpg",
         "date": "2023-08-19",
-        "description": "A family of four, including a man, a woman, and two young children, poses for a picture on a couch.",
+        "description": "A family of four, including my dad, my mom, my sister and me when we were like 4 and 2 years old, poses for a picture on a couch. Also a picture taken from a photo album.",
         "tags": [
             "family",
-            "man",
-            "woman",
-            "children",
+            "dad",
+            "mom",
+            "sister",
+            "years",
             "picture",
-            "couch"
+            "couch",
+            "photo",
+            "album"
         ]
     },
     {
         "src": "imgs/Img4.jpg",
         "date": "2023-12-01",
-        "description": "Two women, one standing and one sitting, pose for a slightly out-of-focus photo on a stone wall overlooking a body of water.",
+        "description": "This is a screenshot of a picture of my mom and my aunt, probably when they were in their 20s. One standing and one sitting, pose for a slightly out-of-focus photo on a stone wall overlooking a body of water. This image became my reference photo for a painting I did when I was an undergrad.",
         "tags": [
-            "women",
-            "photo",
+            "screenshot",
+            "picture",
+            "mom",
+            "aunt",
+            "20s",
+            "standing",
             "stone",
             "wall",
             "body",
-            "water"
+            "water",
+            "image",
+            "reference",
+            "photo",
+            "painting",
+            "undergrad"
         ]
     },
     {
         "src": "imgs/Img5.jpg",
         "date": "2023-04-08",
-        "description": "A mille-feuille birthday cake decorated with fresh strawberries, blackberries, blueberries, and a chocolate plaque saying 'Happy Birthday Mom' is being taken out of its box.",
+        "description": "This is was my grandma's birthday. This mille-feuille birthday cake (decorated with fresh strawberries, blackberries, blueberries, and a chocolate plaque saying 'Happy Birthday Mom') is prepared by my aunt. My aunt always buy or even make cakes for grandma even though she doesn't live in the same house anymore.",
         "tags": [
+            "grandma",
             "birthday",
             "cake",
             "strawberries",
@@ -62,33 +82,44 @@
             "blueberries",
             "chocolate",
             "plaque",
-            "Happy",
             "Birthday",
             "Mom",
-            "box"
+            "aunt",
+            "cakes",
+            "house"
         ]
     },
     {
         "src": "imgs/Img6.jpg",
         "date": "2023-04-08",
-        "description": "An older woman wearing a brightly colored floral shirt sits at a table with a delicious-looking layered cake topped with berries in front of her.",
+        "description": "This is my grandma's birthday and as the center of the day she was wearing a brightly colored floral shirt sits at a table with a delicious-looking layered birthday cake topped with berries in front of her. After we all move out from that house, honestly this picure feels different now.",
         "tags": [
-            "woman",
+            "grandma",
+            "birthday",
+            "center",
+            "day",
             "shirt",
             "table",
+            "birthday",
             "cake",
             "berries",
-            "front"
+            "front",
+            "house",
+            "picure"
         ]
     },
     {
         "src": "imgs/Img7.jpg",
         "date": "2023-04-08",
-        "description": "An older woman in a floral shirt sits at a table with a mille-feuille cake decorated with strawberries, blackberries, and blueberries in front of her.",
+        "description": "I guess I was trying to take multiple of the same picture for my grandma for this birthday. She was in a floral shirt sits at a table with a mille-feuille birthday cake decorated with strawberries, blackberries, and blueberries in front of her.",
         "tags": [
-            "woman",
+            "multiple",
+            "picture",
+            "grandma",
+            "birthday",
             "shirt",
             "table",
+            "birthday",
             "cake",
             "strawberries",
             "blackberries",
@@ -99,35 +130,47 @@
     {
         "src": "imgs/Img8.jpg",
         "date": "2023-04-08",
-        "description": "Four women, presumably family members, gather around a mille-feuille cake, likely in celebration of a birthday.",
+        "description": "That is a picture of my grandma in the center, my mom (top right), and my two aunts. I took this picture for them gathered around a mille-feuille cake celebrating grandma's birthday.",
         "tags": [
-            "women",
-            "family",
-            "members",
+            "picture",
+            "grandma",
+            "center",
+            "mom",
+            "right",
+            "aunts",
             "mille-feuille",
             "cake",
-            "celebration",
             "birthday"
         ]
     },
     {
         "src": "imgs/Img9.jpg",
         "date": "2023-04-08",
-        "description": "A family gathers around a table with a birthday cake for 'Mom', smiling for a photo.",
+        "description": "This is another picture that I took for grandma's birthday. With my grandma in the center, to the right is my dad and my mom is standing behind him. To the left is my uncle-in-law with my aunt behind him, and right behind my grandma is the youngest aunt. They gather arund the birthday cake for grandma, smiling for a photo.",
         "tags": [
-            "family",
-            "table",
+            "picture",
+            "grandma",
             "birthday",
+            "center",
+            "dad",
+            "mom",
+            "left",
+            "uncle-in-law",
+            "aunt",
             "cake",
-            "Mom",
             "photo"
         ]
     },
     {
         "src": "imgs/Img10.jpg",
         "date": "2023-09-21",
-        "description": "Three bottles of liquor—Bombay Sapphire gin, Grande Absente, and Hayman's—and a jigger sit on a gray blanket.",
+        "description": "This picture was taken as a reference photo for one of my painting exercise: three bottles of liquor consisting Bombay Sapphire gin, Grande Absente, and Hayman's—and a jigger sit on a gray blanket.",
         "tags": [
+            "picture",
+            "reference",
+            "photo",
+            "painting",
+            "exercise",
             "bottles",
             "liquor",
             "Bombay",
@@ -136,7 +179,6 @@
             "Grande",
             "Absente",
             "Hayman",
-            "—",
             "jigger",
             "blanket"
         ]
@@ -144,16 +186,19 @@
     {
         "src": "imgs/Img11.jpg",
         "date": "2023-09-27",
-        "description": "A still-life painting on a wooden easel depicts three bottles—a clear one with a green liquid and gold cap, a dark one with a white label, and a bright blue plastic bottle lying horizontally—against a textured gray backdrop.",
+        "description": "This is that exercise painting (in progress) with the liquor bottles. It is a still-life painting on a wooden easel with a green liquid and gold cap, a dark one with a white label, and a bright blue plastic bottle lying horizontally—against a textured gray backdrop.",
         "tags": [
+            "exercise",
+            "painting",
+            "progress",
+            "liquor",
+            "bottles",
+            "still-life",
             "painting",
             "easel",
-            "bottles",
-            "one",
             "liquid",
             "gold",
             "cap",
-            "one",
             "label",
             "bottle",
             "backdrop"
@@ -162,44 +207,54 @@
     {
         "src": "imgs/Img12.jpg",
         "date": "2023-10-13",
-        "description": "A painting on an easel depicts Wisława Szymborska's face, with handwritten text overlaid and a black and white photo of Szymborska placed in the bottom left corner.",
+        "description": "I remembered that I was painting this one in the Steinhardt building for studio art. This is the very sketchy stage of this painting. This painting is on an easel and I was trying to depict Wisława Szymborska (my favorite poet), with my favorite poem 'Under One Small Star' overlaid as the background. The black and white photo of Szymborska placed in the bottom left corner was the reference photo.",
         "tags": [
+            "Steinhardt",
+            "building",
+            "studio",
+            "art",
+            "stage",
             "painting",
             "easel",
             "Wisława",
             "Szymborska",
-            "face",
-            "text",
+            "poet",
+            "poem",
+            "Under One Small Star",
+            "background",
             "photo",
-            "bottom",
-            "corner"
+            "corner",
+            "reference"
         ]
     },
     {
         "src": "imgs/Img13.jpg",
         "date": "2023-10-20",
-        "description": "An unfinished portrait of Wisława Szymborska, a Polish poet and essayist, is shown next to a black and white photo of her.",
+        "description": "This is the more detailed one of the Wisława Szymborska painting. I was still in the Steinhardt buidling, with that same reference photo of her",
         "tags": [
-            "portrait",
             "Wisława",
             "Szymborska",
-            "poet",
-            "essayist",
+            "painting",
+            "Steinhardt",
+            "buidling",
+            "reference",
             "photo"
         ]
     },
     {
         "src": "imgs/Img14.jpg",
         "date": "2023-12-01",
-        "description": "A hand holds a faded snapshot of three women near a stone wall overlooking a body of water, with paint tubes blurred in the foreground.",
+        "description": "This is was me trying to take a photo of a photo with my mom and aunt near a stone wall overlooking a body of water. I probably was painting something that's why my hand had some blue paint with paint tubes blurred in the foreground.",
         "tags": [
-            "hand",
-            "snapshot",
-            "women",
+            "photo",
+            "mom",
+            "aunt",
             "stone",
             "wall",
             "body",
             "water",
+            "something",
+            "hand",
             "paint",
             "tubes",
             "foreground"
@@ -208,25 +263,41 @@
     {
         "src": "imgs/Img15.jpg",
         "date": "2023-12-12",
-        "description": " A painting on an easel depicts two faceless figures, one standing in white/gray and one sitting in light blue, against a gray and white background suggestive of fog or mist.",
+        "description": "This was my last painting for that painting class, and I used the photo of my mom and aunt as the reference. I was painting this at home that is why the easel is the one I got from high school. This is the early stage of the painting that why figures are very blurry.",
         "tags": [
             "painting",
+            "class",
+            "photo",
+            "mom",
+            "aunt",
+            "reference",
+            "home",
             "easel",
-            "figures",
-            "background",
-            "fog",
-            "mist"
+            "one",
+            "school",
+            "stage",
+            "painting",
+            "figures"
         ]
     },
     {
         "src": "imgs/Img16.jpg",
         "date": "2023-12-13",
-        "description": "A painting depicts two figures with blank faces, one standing and wearing light-colored clothes, the other sitting and wearing blue and white, on a stone ledge overlooking a gray body of water.",
+        "description": "I was still in the house (now my old house's dinning table) with that old easel. This probobly taken when the painting of my mom and aunt is nearly done. A painting depicts them with blank faces (honestly I think without the faces are better is contributing the sense of memory), my mom was standing and wearing light-colored clothes, my aunt sitting and wearing blue and white, on a stone ledge overlooking a gray body of water.",
         "tags": [
+            "house",
+            "dinning",
+            "table",
+            "easel",
             "painting",
-            "figures",
+            "mom",
+            "aunt",
             "faces",
+            "sense",
+            "memory",
+            "mom",
             "clothes",
+            "aunt",
             "stone",
             "ledge",
             "body",
@@ -236,14 +307,16 @@
     {
         "src": "imgs/Img17.jpg",
         "date": "2023-12-14",
-        "description": "A painting depicts two figures, one standing and one sitting, with featureless faces, against a muted gray-blue backdrop, possibly by the sea, with the sitting figure perched on a low stone wall.",
+        "description": "This is the finished painting of my mom and aunt, one standing and one sitting, with featureless faces, against a muted gray-blue backdrop, by the sea, with the my aunt perched on a low stone wall.",
         "tags": [
             "painting",
-            "figures",
+            "mom",
+            "aunt",
+            "standing",
             "faces",
             "backdrop",
             "sea",
-            "figure",
+            "aunt",
             "stone",
             "wall"
         ]
@@ -251,27 +324,33 @@
     {
         "src": "imgs/Img18.jpg",
         "date": "2023-07-05",
-        "description": "A seating chart for the Twice 5th World Tour 'Ready to Be' at MetLife Stadium shows the stage, seating sections, and available filters and legend.",
+        "description": "A seating chart for the Twice 5th World Tour 'Ready to Be' at MetLife Stadium shows the stage, seating sections, and available filters and legend. This was my first ever in person concert and Twice was the first K-pop group that I followed since their debut, which I remembered that they debute on the year when I just got into my high school.",
         "tags": [
             "seating",
             "chart",
             "Twice",
             "World",
             "Tour",
-            "Ready",
             "MetLife",
             "Stadium",
             "stage",
             "seating",
             "sections",
             "filters",
-            "legend"
+            "legend",
+            "person",
+            "concert",
+            "K-pop",
+            "group",
+            "debut",
+            "year",
+            "school"
         ]
     },
     {
         "src": "imgs/Img19.jpg",
         "date": "2023-07-06",
-        "description": "A screenshot of a Ticketmaster mobile ticket displays details for the Twice 5th World Tour 'Ready To Be' concert at MetLife Stadium on July 6, 2023, at 7:30 PM, with section 236, row 4, seat 5, and entry through the Verizon Gate, along with a promotional image of the group.",
+        "description": "A screenshot of a Ticketmaster mobile ticket displays details for the Twice 5th World Tour 'Ready To Be' concert at MetLife Stadium on July 6, 2023, at 7:30 PM, with section 236, row 4, seat 5, and entry through the Verizon Gate, along with a promotional image of the group. I went with my sister that day and all I remembered was that I was singing all along during the concert.",
         "tags": [
             "screenshot",
             "Ticketmaster",
@@ -280,7 +359,6 @@
             "Twice",
             "World",
             "Tour",
-            "Ready",
             "concert",
             "MetLife",
             "Stadium",
@@ -293,16 +371,24 @@
             "Verizon",
             "Gate",
             "image",
-            "group"
+            "group",
+            "sister",
+            "day",
+            "concert"
         ]
     },
     {
         "src": "imgs/Img20.jpg",
         "date": "2023-10-13",
-        "description": "A sepia-toned portrait features a woman with her eyes closed, a slight smile, a cigarette held between the fingers of her left hand, and a teacup in front of her, all while seated before a backdrop of bookshelves.",
+        "description": "This is the reference photo I found for my painting of my favorite poet. A sepia-toned portrait of Wisława Szymborska with her eyes closed, a slight smile, a cigarette held between the fingers of her left hand, and a teacup in front of her, all while seated before a backdrop of bookshelves.",
         "tags": [
+            "reference",
+            "photo",
+            "painting",
+            "poet",
             "portrait",
-            "woman",
+            "Wisława",
+            "Szymborska",
             "eyes",
             "smile",
             "cigarette",
